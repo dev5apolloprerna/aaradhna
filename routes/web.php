@@ -103,6 +103,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 
 Route::prefix('admin')->middleware(['auth'])->group(function () 
 {
+        Route::get('/reports/active-customers-by-publish-date', [ReportController::class, 'activeCustomersByPublishDate'])
+        ->name('admin.reports.activeCustomersByPublishDate');
     Route::get('/customers/login-history', [ReportController::class, 'index'])->name('admin.customers_login-history.index');
     Route::get('/customers/{customer_id}/login-history', [ReportController::class, 'loginHistory'])->name('admin.customers.loginHistory');
     Route::get('/customers/login-history/{customer_id}', [ReportController::class, 'loginHistoryAjax'])
