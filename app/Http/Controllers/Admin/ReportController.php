@@ -9,9 +9,78 @@ use Illuminate\Http\Request;
 
 use App\Models\CustomerMagazineLog;
 use App\Models\Customer;
+use App\Models\MagazineMaster;
 
 class ReportController extends Controller
 {
+    /**
+     * List customers whose subscription covered a magazine publication date.
+     */
+    public function activeCustomersByPublishDate(Request $request)
+    {
+        $validated = $request->validate([
+            'publish_date' => ['nullable', 'date_format:Y-m-d'],
+            'q' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $publishDate = $validated['publish_date'] ?? null;
+        $q = $validated['q'] ?? null;
+        $magazines = collect();
+        $customers = null;
+
+        if ($publishDate) {
+            $magazines = MagazineMaster::query()
+                ->whereDate('publish_date', $publishDate)
+                ->where('isDelete', 0)
+                ->orderBy('title')
+                ->get(['id', 'title', 'publish_date']);
+
+            // Pick one qualifying subscription per customer so renewals or
+            // overlapping subscriptions cannot duplicate a report row.
+            $qualifyingSubscriptions = DB::table('subscription_master')
+                ->select('customer_id', DB::raw('MAX(subscription_id) as subscription_id'))
+                ->where('isDelete', 0)
+                ->whereDate('start_date', '<=', $publishDate)
+                ->whereDate('end_date', '>=', $publishDate)
+                ->groupBy('customer_id');
+
+            $customers = Customer::from('customer_master as cm')
+                ->joinSub($qualifyingSubscriptions, 'qualifying_subscriptions', function ($join) {
+                    $join->on('qualifying_subscriptions.customer_id', '=', 'cm.customer_id');
+                })
+                ->join('subscription_master as sm', 'sm.subscription_id', '=', 'qualifying_subscriptions.subscription_id')
+                ->leftJoin('plan_master as pm', 'pm.plan_id', '=', 'sm.plan_id')
+                ->where('cm.isDelete', 0)
+                ->when($q, function ($query) use ($q) {
+                    $query->where(function ($subQuery) use ($q) {
+                        $subQuery->where('cm.customer_name', 'like', "%{$q}%")
+                            ->orWhere('cm.customer_mobile', 'like', "%{$q}%")
+                            ->orWhere('cm.customer_email', 'like', "%{$q}%");
+                    });
+                })
+                ->select(
+                    'cm.customer_id',
+                    'cm.customer_name',
+                    'cm.customer_mobile',
+                    'cm.customer_email',
+                    'sm.start_date',
+                    'sm.end_date',
+                    'pm.plan_name'
+                )
+                ->orderBy('sm.end_date')
+                ->orderBy('cm.customer_name')
+                ->paginate(20)
+                ->appends($request->only(['publish_date', 'q']));
+        }
+
+        return view('admin.report.active_customers_by_publish_date', compact(
+            'customers',
+            'magazines',
+            'publishDate',
+            'q'
+        ));
+    }
+
    public function index(Request $request)
 {
     try 

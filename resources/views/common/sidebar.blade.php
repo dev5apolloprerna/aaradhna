@@ -68,6 +68,12 @@ $roleid = Auth::guard('web_employees')->user()->role_id;
                                 </a>
                             </li>
                              <li class="nav-item">
+                                <a href="{{ route('admin.reports.activeCustomersByPublishDate') }}"
+                                   class="nav-link {{ request()->routeIs('admin.reports.activeCustomersByPublishDate') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>Active Customer Report
+                                </a>
+                            </li>
+                             <li class="nav-item">
                                 <a href="{{ route('admin.reports.articleWisePdfViews') }}" class="nav-link">
                                     <i class="ri-file-text-line"></i>
                                     <span>Article Views Report</span>
