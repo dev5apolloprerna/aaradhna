@@ -1,0 +1,131 @@
+1) https://www.getdemo.in/magazine/api/customer-login
+Method : POST
+Request : 
+{
+    "customer_mobile":"9987654321",
+    "password":"123456"
+}
+
+Response : 
+{
+    "status": true,
+    "message": "Login successful",
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL3d3dy5nZXRkZW1vLmluL21hZ2F6aW5lL2FwaS9jdXN0b21lci1sb2dpbiIsImlhdCI6MTc2NzMzMzk3MCwiZXhwIjoxNzY3Mzc3MTcwLCJuYmYiOjE3NjczMzM5NzAsImp0aSI6InlONkRVUXRERENRejVNU0oiLCJzdWIiOiIxIiwicHJ2IjoiMWQwYTAyMGFjZjVjNGI2YzQ5Nzk4OWRmMWFiZjBmYmQ0ZThjOGQ2MyJ9.bhLmLlQTbpArngURKIp1hnUJapD9a-2-YiOTCVpD29s",
+    "customer": {
+        "customer_id": 1,
+        "customer_name": "Bansari Patel",
+        "customer_mobile": "9987654321",
+        "customer_email": "dev6.apolloinfotech@gmail.com",
+        "iStatus": 1,
+        "isDelete": 0,
+        "created_at": "2025-12-27T11:28:23.000000Z",
+        "updated_at": "2026-01-01T09:41:41.000000Z",
+        "must_reset_password": 0,
+        "temp_password_set_at": null
+    }
+}
+
+2) https://www.getdemo.in/magazine/api/customer-register
+Method : POST
+Request : 
+{
+  "customer_name": "Tarang",
+  "customer_mobile": "9876543212",
+  "customer_email": "dev1.apolloinfotech@gmail.com",
+  "password": "admin123",
+  "password_confirmation": "admin123"
+}
+
+Response :
+{
+    "status": true,
+    "message": "Registration successful",	
+    "customer_list": {
+        "customer_name": "John Doe",
+        "customer_mobile": "9876543210",
+        "customer_email": "john@example.com",
+        "password": "$2y$10$uaBcFsA0Lx4e70rxYCdvpec.4rYv.9HM2cm3h.bq3gv7rX6A17L7i",
+        "iStatus": 1,
+        "updated_at": "2025-12-29T07:33:06.000000Z",
+        "created_at": "2025-12-29T07:33:06.000000Z",
+        "customer_id": 9
+    }
+}
+
+3) https://www.getdemo.in/magazine/api/customer/forgot-password
+Method : POST
+Request : 
+{
+  "email": "dev1.apolloinfotech@gmail.com"
+}
+
+Response : 
+{
+    "success": true,
+    "message": "Temporary password sent successfully."
+}
+
+4) https://www.getdemo.in/magazine/api/customer/reset-password
+Method : POST
+Request : 
+{
+  "email": "dev1.apolloinfotech@gmail.com",
+  "temp_password": "R!09ngR1p9",
+  "password": "admin@123",
+  "password_confirmation": "admin@123"
+}
+
+Response : 
+{
+    "success": true,
+    "message": "Password updated successfully."
+}
+
+5) https://www.getdemo.in/magazine/api/all_magazines
+Method : POST
+Request : 
+{
+    "month" : "2",
+    "year" : "2026"
+}
+Response : 
+{
+    "success": true,
+    "data": [
+        {
+            "id": 1,
+            "title": "test",
+            "month": "2",
+            "year": 2026,
+            "image_url": "https://getdemo.in/magazine/1766833997.png",
+            "can_view": false,
+            "lock_reason": "after_end_date",
+            "pdf_url": null
+        }
+    ]
+}
+
+6) https://www.getdemo.in/magazine/api/plan_list
+Response : 
+{
+    "success": true,
+    "message": "Plan list fetched successfully",
+    "data": [
+        {
+            "plan_id": 1,
+            "plan_name": "test plan",
+            "plan_amount": "2500",
+            "days": "5"
+        },
+        {
+            "plan_id": 3,
+            "plan_name": "Silver",
+            "plan_amount": "399",
+            "days": "28"
+        }
+    ]
+}
+
+7)  
+
+
