@@ -6,11 +6,11 @@ use App\Models\Customer;
 use App\Models\FreeArticle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-
+use App\Support\IndianStates;
 use App\Models\Subscription;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-
+use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
 {
@@ -31,7 +31,9 @@ class CustomerController extends Controller
 
     public function create()
     {
-        return view('admin.customer.form');
+        $states = IndianStates::all();
+
+        return view('admin.customer.form', compact('states'));
     }
 
     public function store(Request $request)
@@ -42,11 +44,11 @@ class CustomerController extends Controller
             'customer_mobile' => 'required',
             'customer_email'  => 'required|email|unique:customer_master,customer_email',
             'password'        => 'required|min:6',
-            'address_line_1'        => 'required',
-            'address_line_2'        => 'required',
-            'city'        => 'required',
-            'state'        => 'required',
-            'pincode'        => 'required',
+            'address_line_1' => 'required|string|max:255',
+            'address_line_2' => 'required|string|max:255',
+            'city'           => 'required|string|max:100',
+            'state'          => ['required', 'string', Rule::in(IndianStates::all())],
+            'pincode'        => 'required|string|max:10',
         ]);
 
         Customer::create([
@@ -69,7 +71,9 @@ class CustomerController extends Controller
     public function edit($id)
     {
         $customer = Customer::findOrFail($id);
-        return view('admin.customer.form', compact('customer'));
+        $states = IndianStates::all();
+
+        return view('admin.customer.form', compact('customer', 'states'));
     }
 
     public function update(Request $request, $id)
@@ -81,12 +85,11 @@ class CustomerController extends Controller
             'customer_mobile' => 'required',
             'customer_email'  => 'required|email|unique:customer_master,customer_email,' . $id . ',customer_id',
             'password'        => 'nullable|min:6',
-            'address_line_1'        => 'required',
-            'address_line_2'        => 'required',
-            'city'        => 'required',
-            'state'        => 'required',
-            'pincode'        => 'required',
-
+            'address_line_1' => 'required|string|max:255',
+            'address_line_2' => 'required|string|max:255',
+            'city'           => 'required|string|max:100',
+            'state'          => ['required', 'string', Rule::in(IndianStates::all())],
+            'pincode'        => 'required|string|max:10',
             // 'free_article'        => 'required',
             
         ]);

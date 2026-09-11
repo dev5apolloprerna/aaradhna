@@ -26,8 +26,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-
 Route::post('customer-login', [CustomerAuthController::class, 'login']);
+Route::get('states', [CustomerAuthController::class, 'states']);
 
 
 Route::post('customer-register', [CustomerAuthController::class, 'register']);
