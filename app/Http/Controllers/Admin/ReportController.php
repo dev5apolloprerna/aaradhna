@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use App\Models\CustomerMagazineLog;
 use App\Models\Customer;
 use App\Models\MagazineMaster;
+use App\Exports\ActiveCustomersExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
 {
@@ -80,9 +82,23 @@ class ReportController extends Controller
             'q'
         ));
     }
+    public function exportActiveCustomersByPublishDate(Request $request)
+    {
+        $validated = $request->validate([
+            'publish_date' => ['required', 'date_format:Y-m-d'],
+            'q' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $fileName = 'active-customers-' . $validated['publish_date'] . '.xlsx';
+
+        return Excel::download(
+            new ActiveCustomersExport($validated['publish_date'], $validated['q'] ?? null),
+            $fileName
+        );
+    }
 
    public function index(Request $request)
-{
+  {
     try 
     {
         $q = $request->q;
@@ -119,9 +135,9 @@ class ReportController extends Controller
             ->paginate(20);
 
         return view('admin.report.customer_login', compact('customers', 'q'));
-    } catch (\Exception $e) {
-echo $e->getMessage();    }
-}
+        } catch (\Exception $e) {
+        echo $e->getMessage();    }
+    }
 
     public function loginHistory($customer_id)
     {

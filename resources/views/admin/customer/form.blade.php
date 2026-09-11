@@ -68,10 +68,17 @@
                     </div>
                     
                      <div class="col-md-6 mb-4">
-                        <label class="form-label">State <span style="color:red;">*</span></label>
-                        <input type="text" name="state" class="form-control" value="{{ old('state', $customer->state ?? '') }}">
+                        <label for="state" class="form-label">State <span style="color:red;">*</span></label>
+                        <select id="state" name="state" class="form-control @error('state') is-invalid @enderror" required>
+                            <option value="">Select State</option>
+                            @foreach($states as $state)
+                                <option value="{{ $state }}" @selected(old('state', $customer->state ?? '') === $state)>
+                                    {{ $state }}
+                                </option>
+                            @endforeach
+                        </select>
                         @if($errors->has('state'))
-                            <span class="text-danger">{{ $errors->first('state') }}</span>
+                            <span class="invalid-feedback">{{ $errors->first('state') }}</span>
                         @endif
                     </div>
                     

@@ -31,6 +31,12 @@
                             <button type="submit" class="btn btn-primary">Search</button>
                             <a href="{{ route('admin.reports.activeCustomersByPublishDate') }}" class="btn btn-secondary mx-2">Reset</a>
                         </div>
+                        @if($publishDate)
+                                <a href="{{ route('admin.reports.activeCustomersByPublishDate.export', ['publish_date' => $publishDate, 'q' => $q]) }}"
+                                   class="btn btn-success">
+                                    <i class="fa fa-file-excel"></i> Export to Excel
+                                </a>
+                            @endif
                     </form>
 
                     @if(!$publishDate)
