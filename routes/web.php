@@ -18,9 +18,6 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\ViewerController;
 
-Route::fallback(function () {
-     return view('errors.404');
-});
 
 Route::get('/login', function () {
     return redirect()->route('login');
@@ -191,3 +188,8 @@ Route::get('reports/article-pdf-views-detail/{article_id}', [ReportController::c
     ->name('admin.reports.articlePdfViewsDetail');
 
 Route::get('/{guid?}', [ViewerController::class, 'index'])->name('pdf.viewer');
+
+// Fallback routes must be registered last so they do not intercept valid URLs.
+Route::fallback(function () {
+    return view('errors.404');
+});
