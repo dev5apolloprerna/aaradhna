@@ -21,7 +21,7 @@ class Customer extends Authenticatable implements JWTSubject
         'customer_id', 'customer_name', 'customer_mobile', 'customer_email', 'password','address_line_1','address_line_2','city','state','pincode', 'profile_image', 'login_count', 'magazine_count', 'free_article', 'article_count'
     ];
 
-    protected $hidden = ['password'];
+   protected $hidden = ['password'];
 
 
     public $timestamps = true;
@@ -34,7 +34,7 @@ class Customer extends Authenticatable implements JWTSubject
 
     protected static $smsSenderId = 'SPTRSS';
 
-    protected static $smsTemplateId = '1777178877350789051';
+    protected static $smsTemplateId = '1777178945961395883';
 
     protected static $smsEntityId = '1701175817056971341';
     
@@ -77,6 +77,7 @@ class Customer extends Authenticatable implements JWTSubject
             ];
         }
     }
+
 
     
     public function subscription()
