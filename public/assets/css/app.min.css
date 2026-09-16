@@ -835,7 +835,7 @@
 .navbar-menu {
     width: 250px;
     z-index: 1002;
-    background: #bc6409 !important;
+    background: #283569 !important;
     border-right: none !important;
     bottom: 0;
     margin-top: 0;
@@ -2183,7 +2183,7 @@ a {
     left: 0;
     background-size: cover;
     background-position: 50%;
-    background: #bc6409;
+    background: #283569;
 }
 
 [data-sidebar-image=img-1] .sidebar-background {
@@ -2377,7 +2377,7 @@ a {
     animation-fill-mode: both;
     margin: 0;
     z-index: 1000;
-    background-color: #bc6409;
+    background-color: #283569;
     background-clip: padding-box;
     border: 0 solid var(--vz-border-color);
     border-radius: .3rem;
@@ -5526,8 +5526,8 @@ strong {
 }
 
 .alert-solid.alert-primary {
-    background-color: #bc6409;
-    border-color: #bc6409;
+    background-color: #283569;
+    border-color: #283569;
     color: #fff
 }
 
@@ -7533,7 +7533,7 @@ button {
     height: 100%;
     -webkit-transition: width .4s cubic-bezier(.51, .18, 0, .88) .1s;
     transition: width .4s cubic-bezier(.51, .18, 0, .88) .1s;
-    background-color: #bc6409;
+    background-color: #283569;
     z-index: -1
 }
 
@@ -8101,7 +8101,7 @@ button {
 
 .table th {
     font-weight: 600;
-    background: #bc6409 !important;
+    background: #283569 !important;
     padding: 5px;
     color: white !important;
     
@@ -12615,7 +12615,7 @@ table.dataTable th.dataTables_empty {
     text-align: center;
     padding: 50px;
     font-weight: 600;
-    background: #bc6409 !important;
+    background: #283569 !important;
     padding: 5px;
     color: white !important;
    
@@ -18575,7 +18575,7 @@ input::placeholder {
 
 
 thead tr {
-    background-color: #bc6409 !important;
+    background-color: #283569 !important;
     color: white;
     text-align: center;
 }
@@ -18633,18 +18633,18 @@ tr {
 
 .card-header:first-child {
     border-radius: var(--vz-card-inner-border-radius) var(--vz-card-inner-border-radius) 0 0;
-    background: #bc6409 !important;
+    background: #283569 !important;
 }
 
 
 tr th{
-    background: #bc6409 !important !important;
+    background: #283569 !important !important;
 }
 
 
 .table th {
     font-weight: 600;
-    background: #bc6409 !important;
+    background: #283569 !important;
     padding: 5px;
     color: white !important;
 }
