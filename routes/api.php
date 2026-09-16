@@ -33,12 +33,11 @@ Route::get('states', [CustomerAuthController::class, 'states']);
 Route::post('customer-register', [CustomerAuthController::class, 'register']);
 
 Route::post('customer/forgot-password', [CustomerPasswordController::class, 'forgot']);
-
 Route::post('customer/verify-otp', [CustomerPasswordController::class, 'verifyOtp']);
-
 Route::post('customer/set-password', [CustomerPasswordController::class, 'resetPassword']);
-
 Route::post('customer/reset-password',  [CustomerPasswordController::class, 'reset']);
+Route::middleware('auth:api')->post('customer/change-password', [CustomerPasswordController::class, 'changePassword']);
+
  
 
 

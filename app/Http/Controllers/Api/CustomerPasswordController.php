@@ -17,61 +17,82 @@ class CustomerPasswordController extends Controller
     // Temp password expiry (optional)
     private int $tempExpireMinutes = 60;
     
-    // public function forgot(Request $request)
-    // {
-    //     $request->validate([
-    //         'mobile' => 'required',
-    //     ]);
+    public function testmsg()
+    {
+    $url = 'https://sms.profuseservices.com/sendsms.jsp'
+        . '?user=sadhana'
+        . '&password=bd1a833560XX'
+        . '&senderid=SPTRSS'
+        . '&mobiles=%2B919558344074'
+        . '&sms=' . urlencode(
+            'Dear Sadhna Weekly App User, OTP to change password for your Sadhna Weekly app is 123456 do not share it with any other user. SADHANA PRAKASHAN TRUST'
+        )
+        . '&tempid=1777178945961395883';
 
-    //     $email = $request->email;
-    
-    //     $customer = Customer::where('customer_mobile', $request->mobile)->first();
-    //     if (!$customer) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'mobile not found.',
-    //         ], 404);
-    //     }
+    $response = \Illuminate\Support\Facades\Http::timeout(30)->get($url);
 
-    //     // Generate 6 digit OTP
-    //     $otp = rand(100000, 999999);
+    return response()->json([
+        'http_status' => $response->status(),
+        'response' => $response->body(),
+    ]);
+}
     
-    //     // Save OTP
-    //     $customer->password_otp = $otp;
-    //     $customer->password_otp_expires_at = now()->addMinutes(10);
-    
-    //     $customer->save();
-    
-    //     // Get customer mobile number
-    //     $mobile = $customer->customer_mobile;
-    
-    //     if (!$mobile) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Mobile number not found.',
-    //         ], 400);
-    //     }
+    public function forgot(Request $request)
+    {
+    $request->validate([
+        'mobile' => 'required',
+    ]);
 
-    //     // SMS message
-    //     $sms = "Sadhna Weekly App User, OTP to change password for your Sadhna Weekly app is {$otp} do not share it with any other user. SADHANA PRAKASHAN TRUST";
-    
-    //     // Send SMS
-    //     $smsResponse = Customer::sendSms($mobile, $sms);
-    
-    //     if (!$smsResponse['success']) {
-    
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'SMS sending failed.',
-    //             'error'   => $smsResponse['response'],
-    //         ], 500);
-    //     }
+    $customer = Customer::where(
+        'customer_mobile',
+        $request->mobile
+    )->first();
 
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'OTP sent successfully to your registered mobile number.',
-    //     ]);
-    // }
+    if (!$customer) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Mobile not found.',
+        ], 404);
+    }
+
+    // Generate OTP
+    $otp = random_int(100000, 999999);
+
+    // Save OTP
+    $customer->password_otp = $otp;
+    $customer->password_otp_expires_at = now()->addMinutes(10);
+    $customer->save();
+
+    $mobile = $customer->customer_mobile;
+
+    if (!$mobile) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Mobile number not found.',
+        ], 400);
+    }
+
+    // IMPORTANT:
+    // Keep exact DLT registered template text
+    $sms = "Dear Sadhna Weekly App User, OTP to change password for your Sadhna Weekly app is {$otp} do not share it with any other user. SADHANA PRAKASHAN TRUST";
+
+    $smsResponse = Customer::sendSms($mobile, $sms);
+
+    if (!$smsResponse['success']) {
+    
+        return response()->json([
+            'success' => false,
+            'message' => 'SMS sending failed.',
+            'error' => $smsResponse['response'],
+            'gateway_response' => $smsResponse['raw_response'] ?? null,
+        ], 500);
+    }
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'OTP sent successfully to your registered mobile number.',
+    ]);
+   }
     
     public function verifyOtp(Request $request)
     {
@@ -178,68 +199,68 @@ class CustomerPasswordController extends Controller
         ]);
     }
 
-    public function forgot(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-        ]);
+    // public function forgot(Request $request)
+    // {
+    //     $request->validate([
+    //         'email' => 'required|email',
+    //     ]);
 
-        $email = $request->email;
+    //     $email = $request->email;
 
-        $customer = Customer::where($this->emailColumn, $email)->first();
-        if (!$customer) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Email not found.',
-            ], 404);
-        }
+    //     $customer = Customer::where($this->emailColumn, $email)->first();
+    //     if (!$customer) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Email not found.',
+    //         ], 404);
+    //     }
 
-        // ✅ Generate a temporary password
-        $tempPassword = $this->generateTempPassword();
-        // $tempPassword = $this->generateTempPassword(10);
+    //     // ✅ Generate a temporary password
+    //     $tempPassword = $this->generateTempPassword();
+    //     // $tempPassword = $this->generateTempPassword(10);
 
-        // ✅ Update password in DB (hashed)
-        $customer->password = Hash::make($tempPassword);
+    //     // ✅ Update password in DB (hashed)
+    //     $customer->password = Hash::make($tempPassword);
 
-        // Optional fields (recommended)
-        // Add these columns via migration (shown below) if you want:
-        $customer->must_reset_password = 1;
-        $customer->temp_password_set_at = now();
+    //     // Optional fields (recommended)
+    //     // Add these columns via migration (shown below) if you want:
+    //     $customer->must_reset_password = 1;
+    //     $customer->temp_password_set_at = now();
 
-        $customer->save();
+    //     $customer->save();
 
-        // ✅ Email data
-        $data = [
-            'customer'     => $customer,
-            'tempPassword' => $tempPassword,
-            'minutes'      => $this->tempExpireMinutes,
-        ];
+    //     // ✅ Email data
+    //     $data = [
+    //         'customer'     => $customer,
+    //         'tempPassword' => $tempPassword,
+    //         'minutes'      => $this->tempExpireMinutes,
+    //     ];
 
-        $msg = [
-            'FromMail' => config('mail.from.address'),
-            'Title'    => config('mail.from.name'),
-            'ToEmail'  => $email,
-            'Subject'  => 'Your Temporary Password',
-        ];
+    //     $msg = [
+    //         'FromMail' => config('mail.from.address'),
+    //         'Title'    => config('mail.from.name'),
+    //         'ToEmail'  => $email,
+    //         'Subject'  => 'Your Temporary Password',
+    //     ];
 
-        try {
-            Mail::send('emails.customer_reset_password', $data, function ($message) use ($msg) {
-                $message->from($msg['FromMail'], $msg['Title']);
-                $message->to($msg['ToEmail'])->subject($msg['Subject']);
-            });
-        } catch (\Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Mail failed',
-                'error'   => $e->getMessage(),
-            ], 500);
-        }
+    //     try {
+    //         Mail::send('emails.customer_reset_password', $data, function ($message) use ($msg) {
+    //             $message->from($msg['FromMail'], $msg['Title']);
+    //             $message->to($msg['ToEmail'])->subject($msg['Subject']);
+    //         });
+    //     } catch (\Throwable $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Mail failed',
+    //             'error'   => $e->getMessage(),
+    //         ], 500);
+    //     }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Temporary password sent successfully.',
-        ]);
-    }
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Temporary password sent successfully.',
+    //     ]);
+    // }
 
     /**
      * ✅ Reset password using temp password
