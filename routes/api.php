@@ -9,7 +9,7 @@ use App\Http\Controllers\Api\MagazineApiController;
 use App\Http\Controllers\Api\ArticleApiController;
 use App\Http\Controllers\Api\SubscriptionApiController;
 use App\Http\Controllers\Api\PaymentController;
-
+use App\Http\Controllers\PrivacyPolicyController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -25,7 +25,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-
+Route::get('privacy-policy', [PrivacyPolicyController::class, 'index'])->name('api.privacy-policy');
 Route::post('customer-login', [CustomerAuthController::class, 'login']);
 Route::get('states', [CustomerAuthController::class, 'states']);
 
