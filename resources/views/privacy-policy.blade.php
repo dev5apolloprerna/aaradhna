@@ -93,30 +93,30 @@
         <div class="title">Privacy Policy</div>
 
         <p>
-            Thank you for choosing to be a part of our community at Weekly Sadhna.
+            Thank you for choosing to be a part of our community at Weekly Aaradhna.
             We are committed to protecting your personal information and your right to privacy.
         </p>
 
         <p>
             This Privacy Policy sets out how we collect, use, maintain and disclose information collected from the users
-            or provided by the users or processed by us. Weekly Sadhna is a web portal operated under Sadhna Trust
-            which is a registered trust under Trust law in India and having its registered office at Weekly Sadhna,
+            or provided by the users or processed by us. Weekly Aaradhna is a web portal operated under Aaradhna Trust
+            which is a registered trust under Trust law in India and having its registered office at Weekly Aaradhna,
             411, Shoppers Plaza, Near Maskati Market, Ahmedabad and other associated entities, community services
             offered through the Site, mobile applications and social media channels.
         </p>
 
         <p>
             This Privacy Policy forms part and parcel of the Terms of Use for the Services. Capitalized terms which have
-            not been used herein are ascribed the same meaning as attributed to them in the Terms of Use. Weekly Sadhna
+            not been used herein are ascribed the same meaning as attributed to them in the Terms of Use. Weekly Aaradhna
             respects the privacy of the users of the Services and is committed to protect it at all respects.
         </p>
 
-        <div class="section-title">Information received, collected and stored by Weekly Sadhna</div>
+        <div class="section-title">Information received, collected and stored by Weekly Aaradhna</div>
 
         <p>
             We collect and process some or all of the following types of information in the course of you using our
             Services. The type of information we collect will depend on the circumstances and the Services you are using.
-            Generally speaking, the information about the user as collected by Weekly Sadhna is to be supplied by users
+            Generally speaking, the information about the user as collected by Weekly Aaradhna is to be supplied by users
             and/or automatically tracked while navigation. Information is collected from any other source collectively
             referred to as “Information”.
         </p>
@@ -202,13 +202,13 @@
 
         <h3>(a) Information Shared with Affiliates</h3>
         <p>
-            Weekly Sadhna may share information with its employees, agents, officers and our affiliates including all
+            Weekly Aaradhna may share information with its employees, agents, officers and our affiliates including all
             affiliated websites under common ownership or control for the purpose of processing information on its behalf.
         </p>
 
         <h3>(b) Information Shared with Third Parties and Sponsors</h3>
         <p>
-            Weekly Sadhna may share with other third parties information about our Website users, such as your use of
+            Weekly Aaradhna may share with other third parties information about our Website users, such as your use of
             the Website or other metrics, and the Services provided on the Website or other websites, but only on an
             aggregated basis to help us develop content, services and advertising that we hope you will find interesting.
         </p>
@@ -233,15 +233,15 @@
         </p>
 
         <p>
-            Weekly Sadhna may provide a feature to show you information from your social networking site, if you log in
+            Weekly Aaradhna may provide a feature to show you information from your social networking site, if you log in
             with your social networking service account with us. Information made available by you on those services
             may become visible to others depending upon your privacy settings on such services.
         </p>
 
-        <h3>(c) Sale or Transfer of all or part of Business of Weekly Sadhna</h3>
+        <h3>(c) Sale or Transfer of all or part of Business of Weekly Aaradhna</h3>
         <p>
-            If Weekly Sadhna sells all or part of its business or makes a sale or transfer of its assets or is otherwise
-            involved in a merger or transfer of all or material part of its business, the Weekly Sadhna may transfer
+            If Weekly Aaradhna sells all or part of its business or makes a sale or transfer of its assets or is otherwise
+            involved in a merger or transfer of all or material part of its business, the Weekly Aaradhna may transfer
             your information to the third parties involved in the transaction.
         </p>
 
@@ -255,8 +255,8 @@
         <div class="section-title">Security of Personal Information</div>
 
         <p>
-            Any personal information you provide to Weekly Sadhna is kept on secure servers with limited access. Weekly
-            Sadhna uses reasonable administrative, technical, personnel and physical measures and safeguards to protect
+            Any personal information you provide to Weekly Aaradhna is kept on secure servers with limited access. Weekly
+            Aaradhna uses reasonable administrative, technical, personnel and physical measures and safeguards to protect
             personal information against loss, theft, unauthorized access, disclosure, modification and misuse.
         </p>
 
