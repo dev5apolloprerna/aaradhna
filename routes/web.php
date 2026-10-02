@@ -6,6 +6,7 @@ use App\Http\Controllers\RolesController;
 use App\Http\Controllers\PermissionsController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\PrivacyPolicyController;
+use App\Http\Controllers\Web\CustomerRegistrationController;
 
 use App\Http\Controllers\Admin\MagazineController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -39,6 +40,15 @@ Auth::routes(['register' => false]);
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/privacy-policy', [PrivacyPolicyController::class, 'index'])->name('privacy.policy');
 
+
+// Public customer registration and subscription checkout (outside the admin area).
+Route::prefix('customer')->name('customer.registration.')->group(function () {
+    Route::get('register', [CustomerRegistrationController::class, 'create'])->name('create');
+    Route::post('register', [CustomerRegistrationController::class, 'store'])->name('store');
+    Route::get('payment', [CustomerRegistrationController::class, 'payment'])->name('payment');
+    Route::post('payment/verify', [CustomerRegistrationController::class, 'verify'])->name('verify');
+    Route::get('payment/success', [CustomerRegistrationController::class, 'success'])->name('success');
+});
 
 // Profile Routes
 Route::prefix('profile')->name('profile.')->middleware('auth')->group(function () {
