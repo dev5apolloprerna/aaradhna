@@ -25,6 +25,42 @@ class CustomerRegistrationController extends Controller
             'states' => IndianStates::all(),
         ]);
     }
+     public function existingCustomer(Request $request)
+    {
+        $data = $request->validate([
+            'customer_mobile' => ['required', 'digits:10'],
+        ]);
+
+        $customer = Customer::where('customer_mobile', $data['customer_mobile'])
+            ->where('isDelete', 0)
+            ->first();
+
+        if (!$customer) {
+            return response()->json([
+                'message' => 'No existing customer was found. Please complete the form to create an account.',
+            ], 404);
+        }
+
+        if (!(int) $customer->iStatus) {
+            return response()->json([
+                'message' => 'This customer account is inactive. Please contact support.',
+            ], 422);
+        }
+
+        return response()->json([
+            'message' => 'Welcome back! Your details have been filled in. Choose a plan to continue.',
+            'customer' => $customer->only([
+                'customer_name',
+                'customer_mobile',
+                'customer_email',
+                'address_line_1',
+                'address_line_2',
+                'city',
+                'state',
+                'pincode',
+            ]),
+        ]);
+    }
 
     public function store(Request $request)
     {

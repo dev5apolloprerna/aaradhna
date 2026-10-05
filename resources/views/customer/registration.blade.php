@@ -5,7 +5,7 @@
 <div class="intro">
     <div class="eyebrow">Customer subscription</div>
     <h1>Register & choose your plan</h1>
-    <p class="muted">Create your customer account and continue securely to payment. Already registered? Use the same email or mobile and your password to extend your subscription.</p>
+    <p class="muted">Enter your mobile number first. If you are already registered, we will automatically fill in your saved details so you can choose a plan and continue.</p>
 </div>
 <div class="card">
     @if($errors->any())
@@ -16,9 +16,15 @@
         <h2 class="section-title">Personal details</h2>
         <div class="grid">
             <div><label for="customer_name">Full name *</label><input id="customer_name" name="customer_name" value="{{ old('customer_name') }}" required autocomplete="name"></div>
-            <div><label for="customer_mobile">Mobile number *</label><input id="customer_mobile" name="customer_mobile" value="{{ old('customer_mobile') }}" required inputmode="numeric" maxlength="10" autocomplete="tel"></div>
+            <div><label for="customer_mobile">Mobile number *</label><input id="customer_mobile" name="customer_mobile" value="{{ old('customer_mobile') }}" required inputmode="numeric" maxlength="10" autocomplete="tel"><small class="lookup-status muted" id="lookup-status" role="status" aria-live="polite">Saved details will be filled automatically for existing customers.</small></div>
+            
             <div><label for="customer_email">Email address *</label><input type="email" id="customer_email" name="customer_email" value="{{ old('customer_email') }}" required autocomplete="email"></div>
             <div><label for="password">Password *</label><input type="password" id="password" name="password" required minlength="6" autocomplete="current-password"><small class="muted">Existing customers must enter their current password.</small></div>
+             <div class="full existing-customer-lookup">
+                <button class="btn btn-secondary" id="find-customer" type="button">Find my saved details</button>
+                <span class="lookup-status muted" id="lookup-status" role="status" aria-live="polite"></span>
+            </div>
+
             <div class="full"><label for="address_line_1">Address *</label><input id="address_line_1" name="address_line_1" value="{{ old('address_line_1') }}" required autocomplete="address-line1"></div>
             <div class="full"><label for="address_line_2">Address line 2</label><input id="address_line_2" name="address_line_2" value="{{ old('address_line_2') }}" autocomplete="address-line2"></div>
             <div><label for="state">State *</label><select id="state" name="state" required><option value="">Select state</option>@foreach($states as $state)<option value="{{ $state }}" @selected(old('state') === $state)>{{ $state }}</option>@endforeach</select></div>
@@ -43,3 +49,76 @@
     </form>
 </div>
 @endsection
+
+
+@push('scripts')
+<script>
+    (() => {
+        const mobileInput = document.getElementById('customer_mobile');
+        const status = document.getElementById('lookup-status');
+        const fields = ['customer_name', 'customer_email', 'address_line_1', 'address_line_2', 'city', 'state', 'pincode'];
+        let lookupController;
+
+        const findCustomer = async (mobile) => {
+            lookupController?.abort();
+            lookupController = new AbortController();
+
+            status.className = 'lookup-status muted';
+            status.textContent = 'Checking for your saved details…';
+
+            try {
+                const response = await fetch(@json(route('customer.registration.existing-customer')), {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': @json(csrf_token()),
+                    },
+                    body: JSON.stringify({ customer_mobile: mobile }),
+                    signal: lookupController.signal,
+                });
+                const result = await response.json();
+
+                if (response.status === 404) {
+                    status.className = 'lookup-status muted';
+                    status.textContent = result.message;
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(result.message || Object.values(result.errors || {})[0]?.[0] || 'We could not find your details.');
+                }
+
+                fields.forEach((field) => {
+                    document.getElementById(field).value = result.customer[field] || '';
+                });
+                status.className = 'lookup-status lookup-success';
+                status.textContent = result.message;
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    return;
+                }
+                status.className = 'lookup-status lookup-error';
+                status.textContent = error.message;
+            }
+        };
+
+        mobileInput.addEventListener('input', () => {
+            const mobile = mobileInput.value.replace(/\D/g, '').slice(0, 10);
+            mobileInput.value = mobile;
+
+            if (mobile.length === 10) {
+                findCustomer(mobile);
+            } else {
+                lookupController?.abort();
+                status.className = 'lookup-status muted';
+                status.textContent = 'Enter a 10-digit mobile number to check for saved details.';
+            }
+        });
+
+        if (/^\d{10}$/.test(mobileInput.value)) {
+            findCustomer(mobileInput.value);
+        }
+    })();
+</script>
+@endpush
