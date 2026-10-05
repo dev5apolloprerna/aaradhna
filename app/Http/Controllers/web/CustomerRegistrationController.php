@@ -18,6 +18,8 @@ use Razorpay\Api\Errors\SignatureVerificationError;
 
 class CustomerRegistrationController extends Controller
 {
+    private const DEFAULT_PASSWORD = '123456';
+
     public function create()
     {
         return view('customer.registration', [
@@ -25,7 +27,8 @@ class CustomerRegistrationController extends Controller
             'states' => IndianStates::all(),
         ]);
     }
-     public function existingCustomer(Request $request)
+
+    public function existingCustomer(Request $request)
     {
         $data = $request->validate([
             'customer_mobile' => ['required', 'digits:10'],
@@ -68,7 +71,7 @@ class CustomerRegistrationController extends Controller
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_mobile' => ['required', 'digits:10'],
             'customer_email' => ['required', 'email', 'max:255'],
-            'password' => ['required', 'string', 'min:6'],
+            'password' => ['nullable', 'string', 'min:6'],
             'address_line_1' => ['required', 'string', 'max:255'],
             'address_line_2' => ['nullable', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:100'],
@@ -85,11 +88,6 @@ class CustomerRegistrationController extends Controller
         }
 
         $customer = $emailCustomer ?: $mobileCustomer;
-        if ($customer && !Hash::check($data['password'], $customer->password)) {
-            return back()->withInput($request->except('password'))->withErrors([
-                'password' => 'An account already exists with this email or mobile. Enter its correct password to renew.',
-            ]);
-        }
 
         if (!$customer) {
             $freeArticle = FreeArticle::first();
@@ -97,7 +95,8 @@ class CustomerRegistrationController extends Controller
                 'customer_name' => $data['customer_name'],
                 'customer_mobile' => $data['customer_mobile'],
                 'customer_email' => $data['customer_email'],
-                'password' => Hash::make($data['password']),
+                // New customers: use the entered password, or the default 123456 if left blank.
+                'password' => Hash::make(($data['password'] ?? null) ?: self::DEFAULT_PASSWORD),
                 'address_line_1' => $data['address_line_1'],
                 'address_line_2' => $data['address_line_2'] ?? '',
                 'city' => $data['city'],
@@ -110,7 +109,7 @@ class CustomerRegistrationController extends Controller
         }
 
         if (!(int) $customer->iStatus) {
-            return back()->withInput($request->except('password'))->withErrors(['customer_email' => 'This customer account is inactive. Please contact support.']);
+            return back()->withInput()->withErrors(['customer_email' => 'This customer account is inactive. Please contact support.']);
         }
 
         $plan = Plan::where('iStatus', 1)->findOrFail($data['plan_id']);
@@ -125,7 +124,7 @@ class CustomerRegistrationController extends Controller
             ]);
         } catch (\Throwable $exception) {
             report($exception);
-            return back()->withInput($request->except('password'))->withErrors(['payment' => 'Payment could not be started. Please try again shortly.']);
+            return back()->withInput()->withErrors(['payment' => 'Payment could not be started. Please try again shortly.']);
         }
 
         $order = RazorpayOrder::create([
