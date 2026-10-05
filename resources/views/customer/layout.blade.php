@@ -31,14 +31,25 @@
         .price { display:block; font-size:1.6rem; font-weight:850; margin:8px 0 3px; color:var(--brand); }
         .btn { display:inline-flex; justify-content:center; border:0; border-radius:10px; padding:14px 24px; background:var(--brand); color:white; font-size:1rem; font-weight:800; cursor:pointer; text-decoration:none; }
         .btn:hover { background:var(--brand-dark); }
+         .btn:disabled { cursor:wait; opacity:.65; }
+        .btn-secondary { background:#f5eeee; border:1px solid #d7c4c8; color:var(--brand-dark); padding:10px 16px; }
+        .btn-secondary:hover { background:#eadde0; }
+
         .btn-block { width:100%; }
+        
+        .existing-customer-lookup { display:flex; align-items:center; gap:14px; margin-top:-4px; }
+        .lookup-status { display:block; font-size:.82rem; line-height:1.45; margin-top:7px; }
+        .lookup-success { color:#137a3f; font-weight:700; }
+        .lookup-error { color:#842029; font-weight:700; }
+
         .alert { border-radius:10px; padding:14px 17px; background:#fff0f0; border:1px solid #edbcbc; color:#842029; margin-bottom:22px; }
         .alert ul { margin:0; padding-left:20px; }
         .section-title { border-bottom:1px solid var(--line); padding-bottom:12px; margin:10px 0 20px; }
         .summary-row { display:flex; justify-content:space-between; gap:20px; padding:13px 0; border-bottom:1px solid var(--line); }
         .summary-row:last-child { border-bottom:0; }
         .check { width:72px;height:72px;border-radius:50%;margin:0 auto 20px;background:#e7f6ed;color:#137a3f;display:grid;place-items:center;font-size:2.2rem; }
-        @media(max-width:700px) { .grid { grid-template-columns:1fr; } .full { grid-column:auto; } .shell { margin:25px auto; } .secure { display:none; } }
+        @media(max-width:700px) { .grid { grid-template-columns:1fr; } .full { grid-column:auto; } .shell { margin:25px auto; } .secure { display:none; } .existing-customer-lookup { align-items:stretch; flex-direction:column; } }
+        
     </style>
     @stack('head')
 </head>

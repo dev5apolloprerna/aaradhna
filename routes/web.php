@@ -44,6 +44,9 @@ Route::get('/privacy-policy', [PrivacyPolicyController::class, 'index'])->name('
 // Public customer registration and subscription checkout (outside the admin area).
 Route::prefix('customer')->name('customer.registration.')->group(function () {
     Route::get('register', [CustomerRegistrationController::class, 'create'])->name('create');
+    Route::post('register/customer', [CustomerRegistrationController::class, 'existingCustomer'])
+        ->middleware('throttle:10,1')
+        ->name('existing-customer');
     Route::post('register', [CustomerRegistrationController::class, 'store'])->name('store');
     Route::get('payment', [CustomerRegistrationController::class, 'payment'])->name('payment');
     Route::post('payment/verify', [CustomerRegistrationController::class, 'verify'])->name('verify');
