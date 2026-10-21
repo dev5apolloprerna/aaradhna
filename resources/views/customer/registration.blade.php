@@ -40,15 +40,10 @@
             </div>
             <div class="autofill-target"><label for="customer_name">Full name *</label><input id="customer_name" name="customer_name" value="{{ old('customer_name') }}" required autocomplete="name"></div>
 
-            <div class="autofill-target"><label for="customer_email">Email address *</label><input type="email" id="customer_email" name="customer_email" value="{{ old('customer_email') }}" required autocomplete="email"></div>
-            <div class="autofill-target" id="password-wrap">
-                <label for="password">Login password *</label>
-                <input type="text" id="password" name="password" value="{{ old('password', '123456') }}" required minlength="6" autocomplete="new-password">
-                <small class="lookup-status muted">Default password is 123456. You can change it if you want.</small>
-            </div>
+            <div class="autofill-target"><label for="customer_email">Email address <input type="email" id="customer_email" name="customer_email" value="{{ old('customer_email') }}" autocomplete="email"></div>
 
-            <div class="full autofill-target"><label for="address_line_1">Address *</label><input id="address_line_1" name="address_line_1" value="{{ old('address_line_1') }}" required autocomplete="address-line1"></div>
-            <div class="full autofill-target"><label for="address_line_2">Address line 2</label><input id="address_line_2" name="address_line_2" value="{{ old('address_line_2') }}" autocomplete="address-line2"></div>
+            <div class="autofill-target"><label for="address_line_1">Address *</label><input id="address_line_1" name="address_line_1" value="{{ old('address_line_1') }}" required autocomplete="address-line1"></div>
+            <div class="autofill-target"><label for="address_line_2">Address line 2</label><input id="address_line_2" name="address_line_2" value="{{ old('address_line_2') }}" autocomplete="address-line2"></div>
             <div class="autofill-target"><label for="state">State *</label><select id="state" name="state" required><option value="">Select state</option>@foreach($states as $state)<option value="{{ $state }}" @selected(old('state') === $state)>{{ $state }}</option>@endforeach</select></div>
             <div class="autofill-target"><label for="city">City *</label><input id="city" name="city" value="{{ old('city') }}" required autocomplete="address-level2"></div>
             <div class="autofill-target"><label for="pincode">Pincode *</label><input id="pincode" name="pincode" value="{{ old('pincode') }}" required inputmode="numeric" maxlength="10" autocomplete="postal-code"></div>
@@ -80,21 +75,9 @@
         const mobileWrap = document.getElementById('mobile-wrap');
         const status = document.getElementById('lookup-status');
         const submitBtn = document.getElementById('submit-btn');
-        const passwordWrap = document.getElementById('password-wrap');
-        const passwordInput = document.getElementById('password');
-        const DEFAULT_PASSWORD = '123456';
         const fields = ['customer_name', 'customer_email', 'address_line_1', 'address_line_2', 'city', 'state', 'pincode'];
         let lookupController = null;
         let autofilled = false;
-
-        // Existing customer: hide and disable password (not submitted). New customer: show it.
-        const setPasswordVisible = (visible) => {
-            passwordWrap.hidden = !visible;
-            passwordInput.disabled = !visible;
-            if (visible && !passwordInput.value) {
-                passwordInput.value = DEFAULT_PASSWORD;
-            }
-        };
 
         const setStatus = (type, text) => {
             status.className = 'lookup-status ' + type;
@@ -139,7 +122,6 @@
 
                 if (response.status === 404) {
                     clearAutofilled();
-                    setPasswordVisible(true);
                     setStatus('muted', result.message || 'No existing customer found. Please fill in your details.');
                     return;
                 }
@@ -152,7 +134,6 @@
                     document.getElementById(field).value = result.customer[field] || '';
                 });
                 autofilled = true;
-                setPasswordVisible(false);
                 setStatus('lookup-success', result.message);
             } catch (error) {
                 if (error.name === 'AbortError') return;
@@ -176,7 +157,6 @@
                 lookupController = null;
                 setLoading(false);
                 clearAutofilled();
-                setPasswordVisible(true);
                 setStatus('muted', 'Enter a 10-digit mobile number to check for saved details.');
             }
         });
