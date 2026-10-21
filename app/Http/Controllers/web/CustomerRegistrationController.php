@@ -70,8 +70,7 @@ class CustomerRegistrationController extends Controller
         $data = $request->validate([
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_mobile' => ['required', 'digits:10'],
-            'customer_email' => ['required', 'email', 'max:255'],
-            'password' => ['nullable', 'string', 'min:6'],
+            'customer_email' => ['nullable', 'email', 'max:255'],
             'address_line_1' => ['required', 'string', 'max:255'],
             'address_line_2' => ['nullable', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:100'],
@@ -80,7 +79,10 @@ class CustomerRegistrationController extends Controller
             'plan_id' => ['required', Rule::exists('plan_master', 'plan_id')->where('iStatus', 1)],
         ]);
 
-        $emailCustomer = Customer::where('customer_email', $data['customer_email'])->where('isDelete', 0)->first();
+        $email = $data['customer_email'] ?? null;
+        $emailCustomer = $email
+            ? Customer::where('customer_email', $email)->where('isDelete', 0)->first()
+            : null;
         $mobileCustomer = Customer::where('customer_mobile', $data['customer_mobile'])->where('isDelete', 0)->first();
 
         if ($emailCustomer && $mobileCustomer && !$emailCustomer->is($mobileCustomer)) {
@@ -94,9 +96,9 @@ class CustomerRegistrationController extends Controller
             $customer = Customer::create([
                 'customer_name' => $data['customer_name'],
                 'customer_mobile' => $data['customer_mobile'],
-                'customer_email' => $data['customer_email'],
-                // New customers: use the entered password, or the default 123456 if left blank.
-                'password' => Hash::make(($data['password'] ?? null) ?: self::DEFAULT_PASSWORD),
+                'customer_email' => $email ?? '',
+                // New customers always get the default login password 123456.
+                'password' => Hash::make(self::DEFAULT_PASSWORD),
                 'address_line_1' => $data['address_line_1'],
                 'address_line_2' => $data['address_line_2'] ?? '',
                 'city' => $data['city'],
