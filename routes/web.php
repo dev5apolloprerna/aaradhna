@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\Web\CustomerRegistrationController;
 
+
 use App\Http\Controllers\Admin\MagazineController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\PlanController;
@@ -53,9 +54,10 @@ Route::prefix('customer')->name('customer.registration.')->group(function () {
     Route::get('payment/success', [CustomerRegistrationController::class, 'success'])->name('success');
 });
 
+
 // Profile Routes
 Route::prefix('profile')->name('profile.')->middleware('auth')->group(function () {
-    Route::get('/', [HomeController::class, 'getProfile'])->name('detail');
+    Route::get('/detail', [HomeController::class, 'getProfile'])->name('detail');
     Route::get('/edit', [HomeController::class, 'EditProfile'])->name('EditProfile');
     Route::post('/update', [HomeController::class, 'updateProfile'])->name('update');
     Route::post('/change-password', [HomeController::class, 'changePassword'])->name('change-password');
