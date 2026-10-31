@@ -168,8 +168,10 @@ class PaymentController extends Controller
         
             $days   = (int) $plan->days;
             $amount = (float) $plan->plan_amount;
+            // સંજીવની / શુભેચ્છક = આજીવન = 15 વર્ષ
+            $isLifelong = ($days === 0) || in_array((int) $planId, [14, 15], true);
         
-            DB::transaction(function () use ($orderRow, $rzpPaymentId, $rzpSignature, $customerId, $planId, $days, $amount) {
+            DB::transaction(function () use ($orderRow, $rzpPaymentId, $rzpSignature, $customerId, $planId, $days, $amount, $isLifelong) {
         
                 // ✅ Update order table
                 $orderRow->payment_id = $rzpPaymentId;
@@ -186,15 +188,26 @@ class PaymentController extends Controller
         
                 $today = Carbon::today();
         
-                // if active and not expired => start after end_date else start today
-                if ($activeSub && !empty($activeSub->end_date) && Carbon::parse($activeSub->end_date)->gte($today)) {
-                    $startDate = Carbon::parse($activeSub->end_date)->addDay();
+                if ($isLifelong) {
+                    // આજીવન: આજથી શરૂ, end = +15 વર્ષ
+                    $startDate = $today->copy();
+                    $endDate   = $startDate->copy()->addYears(15)->subDay();
+                    $days      = $startDate->diffInDays($endDate) + 1;
                 } else {
-                    $startDate = $today;
+                    // if active and not expired => start after end_date else start today
+                    if ($activeSub && !empty($activeSub->end_date)) {
+                        $currentEnd = Carbon::parse($activeSub->end_date);
+                        if ($currentEnd->gte($today)) {
+                            $startDate = $currentEnd->addDay();
+                        } else {
+                            $startDate = $today->copy();
+                        }
+                    } else {
+                        $startDate = $today->copy();
+                    }
+                    // end_date inclusive
+                    $endDate = (clone $startDate)->addDays(max(1, $days) - 1);
                 }
-        
-                // end_date inclusive
-                $endDate = (clone $startDate)->addDays(max(0, $days - 1));
         
                 // deactivate old
                 DB::table('subscription_master')
@@ -211,6 +224,10 @@ class PaymentController extends Controller
                     'days'        => $days,
                     'amount'      => $amount,
                     'isActive'    => 1,
+                    'iStatus'     => 1,
+                    'isDelete'    => 0,
+                    'created_at'  => now(),
+                    'updated_at'  => now(),
                 ]);
             });
         
@@ -271,6 +288,9 @@ class PaymentController extends Controller
 
             $amount = (float) $plan->plan_amount;
             $days   = (int) $plan->days;
+            $planId = (int) $request->plan_id;
+            // સંજીવની / શુભેચ્છક = આજીવન = 15 વર્ષ
+            $isLifelong = ($days === 0) || in_array($planId, [14, 15], true);
 
             $api = new Api(env('RAZORPAY_KEY'), env('RAZORPAY_SECRET'));
 
@@ -301,7 +321,7 @@ class PaymentController extends Controller
                 ], 422);
             }
 
-            DB::transaction(function () use ($customerId, $request, $days, $amount, $orderRow) {
+            DB::transaction(function () use ($customerId, $request, $days, $amount, $orderRow, $planId, $isLifelong) {
 
                 // ✅ update order row
                 $orderRow->payment_id = $request->razorpay_payment_id;
@@ -316,22 +336,32 @@ class PaymentController extends Controller
                     ->orderByDesc('subscription_id')
                     ->first();
 
-                $today = Carbon::today();
+                $today = Carbon::today()->startOfDay();
 
-                // if active and not expired -> start after end_date else start today
-                if ($activeSub && !empty($activeSub->end_date) && Carbon::parse($activeSub->end_date)->gte($today)) {
-                    $startDate = Carbon::parse($activeSub->end_date)->addDay();
+                if ($isLifelong) {
+                    // આજીવન: આજથી શરૂ, end = +15 વર્ષ
+                    $startDate = $today->copy();
+                    $endDate   = $startDate->copy()->addYears(15)->subDay();
+                    $days      = $startDate->diffInDays($endDate) + 1;
+                    $newIsActive = true;
                 } else {
-                    $startDate = $today;
+                    // if active and not expired -> start after end_date else start today
+                    if ($activeSub && !empty($activeSub->end_date)) {
+                        $currentEnd = Carbon::parse($activeSub->end_date);
+                        if ($currentEnd->gte($today)) {
+                            $startDate = $currentEnd->addDay();
+                        } else {
+                            $startDate = $today->copy();
+                        }
+                    } else {
+                        $startDate = $today->copy();
+                    }
+
+                    // end_date inclusive
+                    $endDate = (clone $startDate)->addDays(max(1, $days) - 1);
+                    $newIsActive = $startDate->lte($today) && $endDate->endOfDay()->gte($today);
                 }
 
-                // end_date inclusive
-                $endDate = (clone $startDate)->addDays(max(0, $days - 1));
-
-                //new code
-                $today = Carbon::today()->startOfDay();
-                $newIsActive = $startDate->startOfDay()->lte($today) && $endDate->endOfDay()->gte($today); // true only if starts today
-                
                 // ✅ Only deactivate old active subscription if new one is active TODAY
                 if ($newIsActive) {
                     DB::table('subscription_master')
@@ -339,7 +369,7 @@ class PaymentController extends Controller
                         ->where('isActive', 1)
                         ->update(['isActive' => 0]);
                 }
-                
+
                 // ✅ Insert new subscription (upcoming will be isActive=0)
                 DB::table('subscription_master')->insert([
                     'customer_id' => $customerId,
@@ -349,8 +379,6 @@ class PaymentController extends Controller
                     'days'        => $days,
                     'amount'      => $amount,
                     'isActive'    => $newIsActive ? 1 : 0,
-                
-                    // if these columns exist in your table (your screenshot shows them)
                     'iStatus'     => 1,
                     'isDelete'    => 0,
                     'created_at'  => now(),
