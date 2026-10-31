@@ -26,9 +26,12 @@ class CustomerAuthController extends Controller
             'data' => IndianStates::all(),
         ]);
     }
+    
+
 
     public function login(Request $request)
     {
+        
         $rules = [
             'customer_mobile' => 'required|digits:10',
             'password' => 'required|string',
@@ -71,6 +74,8 @@ class CustomerAuthController extends Controller
             'customer' => $this->customerData($customer)
         ]);
     }
+    
+    
     public function register(Request $request)
     {
          if ($request->isJson()) {
@@ -92,7 +97,7 @@ class CustomerAuthController extends Controller
          $request->validate([
             'customer_name'   => 'required|string|max:255',
             'customer_mobile' => 'required|digits:10|unique:customer_master,customer_mobile',
-            'customer_email'  => 'required|email|unique:customer_master,customer_email',
+            'customer_email' => 'nullable|email|unique:customer_master,customer_email',
             'password'        => 'required|min:6',
             'address_line_1'  => 'required|string|max:255',
             'address_line_2'  => 'required|string|max:255',

@@ -45,7 +45,7 @@ class SubscriptionApiController extends Controller
             $start = Carbon::parse($sub->start_date)->startOfDay();
             $end   = Carbon::parse($sub->end_date)->endOfDay();
 
-            // status
+            // status (સંજીવની/શુભેચ્છક end_date=2099 થી active રહે — response shape same)
             if ($today->lt($start)) {
                 $status = 'upcoming';
                 $daysLeft = 0;
@@ -54,7 +54,7 @@ class SubscriptionApiController extends Controller
                 $daysLeft = 0;
             } else {
                 $status = 'active';
-                $daysLeft = $today->diffInDays($end) + 1; // inclusive
+                $daysLeft = $today->diffInDays($end) + 1; // inclusive (lifelong માટે પણ number)
             }
 
             // active flag: only one subscription should be active

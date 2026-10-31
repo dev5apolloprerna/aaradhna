@@ -152,6 +152,8 @@ class MagazineApiController extends Controller
 
         $customerId = $user->customer_id ?? $user->id;
 
+        $this->refreshActiveSubscription($customerId);
+
         $sub = $this->latestSubscription($customerId);
         $subInfo = $this->subscriptionInfo($sub);
 
@@ -189,55 +191,9 @@ class MagazineApiController extends Controller
 
     /**
      * GET /api/magazines/{id}
-     * DETAIL: if locked then do not send pdf url
+     * DETAIL: strict subscription lock — locked users do not get pdf_url
      */
-public function show(Request $request)
-{
-    $id = $request->id;
-
-    $user = auth()->guard('api')->user();
-    if (!$user) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Unauthorised'
-        ], 401);
-    }
-
-    $customerId = $user->customer_id ?? $user->id;
-
-    $sub = $this->latestSubscription($customerId);
-    $subInfo = $this->subscriptionInfo($sub);
-
-    $mag = MagazineMaster::where('isDelete', 0)
-        ->where('iStatus', 1)
-        ->findOrFail($id);
-
-    Customer::where('customer_id', $customerId)->increment('magazine_count');
-
-    MagazineMaster::where('id', $mag->id)->increment('magazine_count');
-
-    CustomerMagazineLog::create([
-        'magazine_id' => $mag->id,
-        'customer_id' => $customerId,
-        'date_time'   => now(),
-    ]);
-
-    return response()->json([
-        'success' => true,
-        'can_view' => true,
-        'subscription' => $subInfo,
-        'data' => [
-            'id'        => $mag->id,
-            'title'     => $mag->title,
-            'month'     => $mag->month,
-            'year'      => $mag->year,
-            'image_url' => $mag->image ? magazine_base_url($mag->image) : null,
-            'pdf_url'   => $mag->pdf ? magazine_base_url($mag->pdf) : null,
-        ],
-    ]);
-}
-
-/*    public function show(Request $request)
+    public function show(Request $request)
     {
         $id = $request->id;
 
@@ -251,6 +207,8 @@ public function show(Request $request)
 
         $customerId = $user->customer_id ?? $user->id;
 
+        $this->refreshActiveSubscription($customerId);
+
         $sub = $this->latestSubscription($customerId);
         $subInfo = $this->subscriptionInfo($sub);
 
@@ -258,7 +216,6 @@ public function show(Request $request)
             ->where('iStatus', 1)
             ->findOrFail($id);
 
-        //$access = $this->magazineAccess($mag, $sub);
         $access = $this->magazineAccess($mag, (int) $customerId);
 
         if (!$access['can_view']) {
@@ -273,17 +230,14 @@ public function show(Request $request)
                     'title' => $mag->title,
                     'month' => $mag->month,
                     'year' => $mag->year,
-                    'image_url' => magazine_base_url($mag->image),
+                    'image_url' => $mag->image ? magazine_base_url($mag->image) : null,
                 ],
             ], 403);
         }
 
         Customer::where('customer_id', $customerId)->increment('magazine_count');
-
-        // ✅ Magazine total views
         MagazineMaster::where('id', $mag->id)->increment('magazine_count');
 
-        // ✅ Insert log row (history)
         CustomerMagazineLog::create([
             'magazine_id' => $mag->id,
             'customer_id' => $customerId,
@@ -303,7 +257,7 @@ public function show(Request $request)
                 'pdf_url'   => $mag->pdf ? magazine_base_url($mag->pdf) : null,
             ],
         ]);
-    }*/
+    }
 
 
     // -----------------------------
@@ -338,46 +292,60 @@ public function show(Request $request)
 
         $today = Carbon::today();
         $end = Carbon::parse($sub->end_date);
+        // સંજીવની / શુભેચ્છક = આજીવન (end_date 2099) — response shape same રાખ્યું
+        $isActive = $today->lte($end);
 
         return [
-            'status' => $today->lte($end) ? 'active' : 'expired',
+            'status' => $isActive ? 'active' : 'expired',
             'start_date' => $sub->start_date,
             'end_date' => $sub->end_date,
-            'days_left' => $today->lte($end) ? $today->diffInDays($end) : 0,
+            'days_left' => $isActive ? $today->diffInDays($end) : 0,
             'plan_id' => $sub->plan_id,
             'amount' => $sub->amount,
         ];
     }
 
     /**
-     * Main access logic:
-     * LIST: show all but can_view false for locked
-     * DETAIL: block if can_view false
+     * Main access logic (strict):
+     * - LIST: show all magazines, can_view true only if subscription covers issue date
+     * - DETAIL: block (403) if can_view false
+     *
+     * સંજીવની / શુભેચ્છક → end_date = 2099 → always covered
+     * વાર્ષિક વગેરે → end_date પ્રમાણે
      */
     private function magazineAccess($mag, int $customerId): array
     {
-        /*$issueDate = \Carbon\Carbon::parse($mag->publish_date)->startOfDay();
+        // issue date: prefer publish_date, else month+year
+        $issueDate = null;
+        if (!empty($mag->publish_date)) {
+            try {
+                $issueDate = Carbon::parse($mag->publish_date)->startOfDay();
+            } catch (\Throwable $e) {
+                $issueDate = null;
+            }
+        }
+        if (!$issueDate) {
+            $issueDate = $this->issueDate($mag);
+        }
+        if (!$issueDate) {
+            return ['can_view' => false, 'reason' => 'invalid_magazine_date'];
+        }
 
-    //$issueDate = $this->issueDate($mag);
-    if (!$issueDate) {
-        return ['can_view' => false, 'reason' => 'invalid_magazine_date'];
+        // active + not deleted + end_date covers this magazine issue
+        // lifelong (plan 14/15) have end_date 2099-12-31 so they always pass
+        $sub = Subscription::where('customer_id', $customerId)
+            ->where('iStatus', 1)
+            ->where('isDelete', 0)
+            ->whereDate('end_date', '>=', $issueDate->toDateString())
+            ->orderByDesc('end_date')
+            ->first();
+
+        if (!$sub) {
+            return ['can_view' => false, 'reason' => 'no_subscription_for_issue'];
+        }
+
+        return ['can_view' => true, 'reason' => null];
     }
-
-
-    // ✅ check subscription that has *not yet expired* and covers old magazines
-    $sub = Subscription::where('customer_id', $customerId)
-        ->where('iStatus', 1)
-        ->where('isDelete', 0)
-        ->whereDate('end_date', '>=', $issueDate->toDateString()) // <= This is the key change
-        ->orderByDesc('end_date')
-        ->first();
-
-    if (!$sub) {
-        return ['can_view' => false, 'reason' => 'no_subscription_for_issue'];
-    }*/
-
-    return ['can_view' => true, 'reason' => null];
-}
 
 
 
